@@ -1,0 +1,88 @@
+Polyline File Format:
+
+For many years, dating back to the early 2000's I have used text files of longitudes 
+and latitudes to work with geographic regions.  The core data is just two floating 
+point values per line.  Each line is a geographic point in a polyline or polygon.
+
+There were many variations in exact format.  The order of the two core values has 
+been both 'long lat' and 'lat long'.  The 'long lat' order mimics (x,y) order with 
+long as the horizontal scale and latitude as the vertical scale.  I started with 
+the other order but then switched and tried to convert everything.  All the 
+examples below have longitude before latitude in at least the core points.
+
+I used extensions like '*.txt' and '*.poly' and later '*.pts' for these files.
+Eventually, I settled on 'pts' and have adopted that to mean one specific format 
+specification.  But there can be older 'pts' files that do not conform.
+
+Below are four versions of older 'poly' file formats.  There were others.  Apart 
+from the lat/long order issue, there was a variety of header and block separator 
+formats used.  The integer index has little meaning beside just a name used here.
+
+The following format is the simplest.  Just an asterisk by itself on a line 
+preceding each block.  One can "grep '*' file | wc -l" to get a count of the number 
+of blocks in the file.
+
+//-----------poly1------------
+*
+-122.4187 37.8527
+-122.4344 37.8524
+...
+//----------------------------
+
+In the next file format, there is now a single header line at the top that 
+lists the total number of blocks in the file.  The asterisk lines also contain 
+an integer count of the number of points in just the block that follows.
+
+//-----------poly2------------
+2
+* 11
+-122.4187 37.8527
+-122.4344 37.8524
+...
+//----------------------------
+
+This format is getting closer to modern day 'pts'.  It has all the same 
+information.  The single opening header line now has an asterisk too. Then 
+the block separators have a block index (starting with 0) added.  And four 
+new fields are added at the end for the lat/long bounding box of the 
+block that follows.  Note, the order of the bounding box fields - these 
+varied over time.
+
+//-----------poly3------------
+* 2
+* 0 11 37.8722 -122.4463 37.8524 -122.4185
+-122.4187 37.8527
+-122.4344 37.8524
+...
+//----------------------------
+
+The most complicated of the formats here.  There is a single header line 
+for the whole file with the format 'N Blocks' where N is the integer 
+count of the number of blocks.  Each block of points now has a five line 
+separator section.  The first of these has an asterisk followed by the 
+block index and number of points in the block.  The second line is meant 
+to be a 'centroid' or possibly a general 'floodfill' point (if that needed 
+to be off center to work).  I never used this data much and generally 
+filled this line with the mid-point of the bounding box.  The bounding 
+box itself is in the third line (from which a trivial centroid could 
+just be calculated on the fly).  The fourth and fifth lines were meant 
+for metadata strings.  Specifically, the fourth line was supposed to 
+be four space delimited strings.  Each string can contain no spaces.  
+Like State (North_Carolina), County (ElPaso), etc.  The fifth line 
+was reserved for a single string which could contain white space, like 
+a readable title..
+
+//-----------poly4------------
+2 Blocks
+* 0 11
+-122.4324 37.8623
+-122.4463 -122.4185   37.8524 37.8722
+US County name Island
+Block Text
+-122.4187 37.8527
+-122.4344 37.8524
+...
+//----------------------------
+
+
+
